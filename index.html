@@ -44,24 +44,29 @@ nav.steps .spacer{flex:1}
 .hint{color:var(--muted); font-size:14px}
 kbd{font:inherit; font-size:13px; border:1px solid var(--rule); border-bottom-width:2px; border-radius:5px; padding:0 5px; background:var(--surface)}
 header.story h1{font-size:clamp(26px,2.8vw,42px); line-height:1.12; margin:4px 0 6px; font-weight:800; letter-spacing:-0.01em; max-width:30ch}
+header.story h1.long{font-size:clamp(22px,2.1vw,32px); max-width:48ch}
+.top{display:grid; grid-template-columns:1fr minmax(0,420px); gap:24px; align-items:end}
+.takeaway{background:#1F6F8B; color:#FFFFFF; border-radius:12px; padding:14px 16px; font-size:17px; line-height:1.4; box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.takeaway b{color:#FFFFFF}
 header.story p{margin:0; color:var(--muted); font-size:clamp(17px,1.35vw,21px); max-width:72ch}
-.main{display:grid; grid-template-columns:1fr 260px; gap:18px; flex:1; min-height:0}
-.charts{display:grid; gap:14px; min-height:420px}
+.main{display:grid; grid-template-columns:1fr 260px; gap:18px; flex:1; min-height:0; align-items:start}
+.charts{display:grid; gap:14px; height:max(480px, calc(100vh - 385px))}
 .charts.s1{grid-template-columns:1fr; grid-template-rows:1fr}
 .charts.s2{grid-template-columns:1fr 1fr; grid-template-rows:1fr}
-.charts.s3,.charts.s4{grid-template-columns:1fr; grid-template-rows:minmax(150px,1fr) minmax(150px,1fr) minmax(240px,1.6fr)}
+.charts.s3,.charts.s4{grid-template-columns:1fr; grid-template-rows:minmax(120px,1fr) minmax(120px,1fr) minmax(220px,1.4fr)}
 .charts.s5{grid-template-columns:1fr 1fr; grid-template-rows:170px 1fr}
 .panel{background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:12px 14px 8px; display:flex; flex-direction:column; min-height:0}
-.panel h2{font-size:16px; margin:0 0 4px; font-weight:600; color:var(--muted)}
+.panel h2{font-size:16px; margin:0 0 4px; font-weight:600; color:var(--muted); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.panel h2 .skew{color:var(--ink); font-size:18px; font-weight:800}
 .panel h2 b{color:var(--ink)}
 .panel .plot{flex:1; min-height:120px; position:relative}
 .panel svg{position:absolute; inset:0; width:100%; height:100%; overflow:visible}
 .wide{grid-column:1 / -1}
 .hidden{display:none !important}
 aside.rail{display:flex; flex-direction:column; gap:10px}
-.stat{background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:10px 14px}
+.stat{background:var(--surface); border:1px solid var(--rule); border-radius:12px; padding:8px 14px}
 .stat .k{font-size:14px; color:var(--muted)}
-.stat .v{font-size:28px; font-weight:800; line-height:1.15}
+.stat .v{font-size:26px; font-weight:800; line-height:1.15}
 .stat .v small{font-size:15px; font-weight:400; color:var(--muted)}
 .stat.sample .v{color:var(--sample)} .stat.mean .v{color:var(--mean)}
 .note{font-size:14px; color:var(--muted); padding:0 4px}
@@ -95,6 +100,8 @@ svg .iv.newest{opacity:1; stroke-width:6}
 .empty{position:absolute; inset:0; display:grid; place-items:center; color:var(--muted); font-size:18px; text-align:center; padding:20px}
 @media (max-width:900px){
   .main{grid-template-columns:1fr}
+  .top{grid-template-columns:1fr}
+  .charts{height:auto}
   .charts.s2,.charts.s3,.charts.s4,.charts.s5{grid-template-columns:1fr; grid-template-rows:none}
   .panel{min-height:240px}
   aside.rail{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
@@ -109,17 +116,20 @@ svg .iv.newest{opacity:1; stroke-width:6}
   <nav class="steps" aria-label="Steps">
     <button data-step="1"><span class="num">1</span>The population</button>
     <button data-step="2"><span class="num">2</span>One sample</button>
-    <button data-step="3"><span class="num">3</span>Many sample means</button>
+    <button data-step="3"><span class="num">3</span>Sample means</button>
     <button data-step="4"><span class="num">4</span>The Central Limit Theorem</button>
     <button data-step="5"><span class="num">5</span>Back to one sample</button>
     <span class="spacer"></span>
-    <span class="hint"><kbd>←</kbd> <kbd>→</kbd> steps · <kbd>Space</kbd> one sample · <kbd>M</kbd> 100 more · <kbd>R</kbd> reset</span>
+    <span class="hint"><kbd>←</kbd> <kbd>→</kbd> steps · <kbd>Space</kbd> draw · <kbd>R</kbd> reset</span>
   </nav>
 
-  <header class="story" aria-live="polite">
-    <h1 id="headline"></h1>
-    <p id="sub"></p>
-  </header>
+  <div class="top">
+    <header class="story" aria-live="polite">
+      <h1 id="headline"></h1>
+      <p id="sub"></p>
+    </header>
+    <div id="takeaway" aria-live="polite"></div>
+  </div>
 
   <div class="main">
     <div class="charts s1" id="charts">
@@ -139,15 +149,18 @@ svg .iv.newest{opacity:1; stroke-width:6}
         <button data-pop="educ">Education</button>
       </div>
     </div>
-    <div class="group"><span>Sample size n</span>
+    <div class="group" id="n-group"><span>Sample size n</span>
       <div class="seg" id="seg-n">
         <button data-n="5">5</button><button data-n="10">10</button><button data-n="30">30</button><button data-n="100">100</button><button data-n="400">400</button>
       </div>
     </div>
+    <div class="group" id="k-group"><span>Number of samples</span>
+      <div class="seg" id="seg-k">
+        <button data-k="1">1</button><button data-k="10">10</button><button data-k="100">100</button><button data-k="1000">1,000</button>
+      </div>
+    </div>
     <div class="group" id="draw-group">
       <button class="b primary" id="btn-one">Draw one sample <kbd>Space</kbd></button>
-      <button class="b" id="btn-100">Draw 100</button>
-      <button class="b" id="btn-1000">Draw 1,000</button>
       <button class="b" id="btn-reset">Reset</button>
     </div>
     <div class="group" id="means-opts">
@@ -189,25 +202,25 @@ svg .iv.newest{opacity:1; stroke-width:6}
   const POPS={
     educ:makePop({v:Object.keys(ED).map(Number),w:Object.values(ED),lo:-0.5,hi:20.5,bw:1,lattice:true,
       unit:'years',fmt:hrs,tick:v=>v.toFixed(0),seFmt:x=>hrs(x,3),shape:'skewed left',
-      title:'Population: <b>3,286 GSS 2024 respondents</b>, years of school completed',
-      h1:'This is the population: 3,286 Americans telling us how many years of school they’ve finished.',
-      p1:p=>`It’s left-skewed: a long tail of people who left school early, with big spikes at 12 (high school) and 16 (a bachelor’s degree). The mean is μ = ${hrs(p.mu)} years and σ = ${hrs(p.sd)}.`}),
+      title:'Population: <b>Years of school completed</b>',
+      h1:'Years of school finished in the United States',
+      p1:p=>`Note: This distribution is negatively skewed: a small number of people have 6 or fewer years of schooling, with large spikes at 12 years and 16 years. The mean is μ = ${hrs(p.mu)} years and σ = ${hrs(p.sd)}.`}),
     age:makePop({v:Object.keys(AG).map(Number),w:Object.values(AG),lo:17.5,hi:89.5,bw:1,lattice:true,
       unit:'years',fmt:hrs,tick:v=>v.toFixed(0),seFmt:x=>hrs(x,3),shape:'uneven',
-      title:'Population: <b>3,208 GSS 2024 respondents</b>, age in years',
-      h1:'This is the population: 3,208 adult Americans and how old they are.',
-      p1:p=>`It’s barely skewed at all: a broad, flat plateau from the 20s to the early 70s that tapers off at both ends. (Everyone 89 or older is recorded as 89.) The mean is μ = ${hrs(p.mu)} years and σ = ${hrs(p.sd)}. Flat isn’t the same as bell-shaped, though.`}),
+      title:'Population: <b>Age in years</b>',
+      h1:'How old are people in the United States who responded to the GSS?',
+      p1:p=>`Note: This distribution is barely skewed at all. It’s a broad, mostly flat plateau from the 20s to the early 70s that tapers off at both ends. The mean is μ = ${hrs(p.mu)} years and σ = ${hrs(p.sd)}.`}),
     inc:makePop({v:INC_V,w:INC_W,lo:0,hi:2050000,bw:25000,lattice:false,
       unit:'',fmt:usd,tick:usdK,seFmt:usd,shape:'skewed right',yLabel:'% of households',
-      title:'Population: <b>29,102 Massachusetts households, 2024 American Community Survey</b>, household income',
-      h1:'This is the population: 29,102 Massachusetts households and what they took in last year.',
-      p1:p=>`It’s extremely right-skewed. The median household makes about $112,000, but a thin tail stretches past $2 million and pulls the mean up to μ = ${usd(p.mu)}. σ = ${usd(p.sd)}. (2024 dollars.)`})
+      title:'Population: <b>Household income in Massachusetts</b>',
+      h1:'Household income in Massachusetts (2024 dollars)',
+      p1:p=>`Note: This distribution is positively skewed. The median Massachusetts household makes about $112,000, but a very small number of households make $1 million or more (one tops $2 million), pulling the mean up to μ = ${usd(p.mu)}. σ = ${usd(p.sd)}.`})
   };
   const TCRIT={5:2.776,10:2.262,30:2.045,100:1.984,400:1.966};
   function npdf(x,m,s){return Math.exp(-0.5*((x-m)/s)**2)/(s*Math.sqrt(2*Math.PI))}
 
   // ---------- State ----------
-  const S={step:1,pop:'inc',n:30,means:[],last:null,ivs:[],method:'t',curve:false,zoom:false,fresh:null};
+  const S={step:1,pop:'inc',n:5,k:1,means:[],last:null,ivs:[],method:'t',curve:false,zoom:false,fresh:null};
   const P=()=>POPS[S.pop];
   const SE=()=>P().sd/Math.sqrt(S.n);
 
@@ -229,16 +242,16 @@ svg .iv.newest{opacity:1; stroke-width:6}
     const p=P();
     const T={
       1:[p.h1,p.p1(p)],
-      2:['Your sample looks like the population, not like a bell curve.',
-         `Draw a few samples of ${S.n}. Each one is lumpy and ${p.shape} in its own way, just like the population. What you take away from it is one number: the sample mean x̄.`],
-      3:['The sample means, though, pile up into a bell.',
-         `Every bar here is a count of sample means, not ${S.pop==='inc'?'households':'people'}. On the same scale, the individual scores sprawl, but the means crowd into a narrow band around μ, ${S.pop==='age'?'and stack up into a bell even though the population is flat':'and stack up symmetrically even though the population is skewed'}. Turn on the normal curve to compare.`],
+      2:['When you draw one sample, it will look a lot like the population, not like the Normal Distribution, especially as you increase the sample size.',
+         'Draw a few samples of 5 and see what they look like. What happens when you increase the sample size to 10, 30, 100, 400?'],
+      3:['However, something else happens when you start pulling sample after sample.',
+         `Press Draw one sample (or Space) a few times and watch each mean land in the bottom chart (▲). Then raise the number of samples to 10, 100, or 1,000. Each bar counts sample means, not ${S.pop==='inc'?'households':'people'}. Try the normal curve and different sample sizes.`],
       4:['The Central Limit Theorem predicts that bell before we draw anything.',
          `For large enough n, sample means are approximately normal no matter what the population looks like, centered on μ, with spread SE = σ/√n = ${p.seFmt(SE())}. Try n = 5: the means are still a bit skewed. Larger n fixes that.`],
       5:['In real life you get one sample, so you get one interval.',
          `x̄ ± ${S.method==='t'?'t':'1.96'} × s/√n. We can’t use σ (we don’t know it), so we estimate the SE from the sample itself. Draw lots of intervals and count how often they catch μ. ${S.method==='z'?'Try n = 5 with z: it misses too often. Then switch to t.':'Switch to z at n = 5 to see what t is protecting you from.'}`]
     };
-    document.getElementById('headline').textContent=T[S.step][0];
+    const hl=document.getElementById('headline');hl.textContent=T[S.step][0];hl.classList.toggle('long',T[S.step][0].length>60);
     document.getElementById('sub').textContent=T[S.step][1];
   }
 
@@ -250,15 +263,15 @@ svg .iv.newest{opacity:1; stroke-width:6}
     stat('Population SD σ',f(p.sd));
     if(S.step>=2){
       stat('Your sample mean x̄',L?f(L.m):'–','sample');
-      stat('Your sample SD s',L?f(L.s):'–','sample');
+      if(S.step!==3)stat('Your sample SD s',L?f(L.s):'–','sample');
     }
     if(S.step===3||S.step===4){
       const k=S.means.length;let sd='–',mm='–';
       if(k>0){const m=S.means.reduce((a,b)=>a+b,0)/k;mm=f(m);
         if(k>1)sd=p.seFmt(Math.sqrt(S.means.reduce((a,b)=>a+(b-m)**2,0)/(k-1)))}
-      if(S.step===3)stat('Average of the means we drew',mm,'mean',`from ${k.toLocaleString()} samples`);
+      if(S.step===3)stat('Average of the means we drew',mm,'mean');
       if(S.step===4)stat('CLT says SE = σ/√n',p.seFmt(SE()),'mean');
-      stat('SD of the means we drew',sd,'mean',`from ${k.toLocaleString()} samples`);
+      stat('SD of the means we drew',sd,'mean');
     }
     if(S.step===5){
       stat('Estimated SE = s/√n',L?p.seFmt(L.s/Math.sqrt(S.n)):'–','sample');
@@ -267,6 +280,17 @@ svg .iv.newest{opacity:1; stroke-width:6}
     }
     document.getElementById('rail').innerHTML=out.join('')+
       (S.step===5?`<p class="note">μ is shown here only because this is a simulation. In real research it’s the thing you’re trying to find.</p>`:'');
+  }
+
+  function takeaway(){
+    const p=P(),k=S.means.length,who=S.pop==='inc'?'households':'people';
+    if(S.step===2&&k>=1)
+      return `<div class="takeaway"><b>Note:</b> Your individual sample mirrors the population that it is drawn from, especially as you increase sample size.</div>`;
+    if(S.step===3&&k>=1){
+      const shape=S.pop==='age'?'flat':S.pop==='inc'?'skewed right':'skewed left';
+      return `<div class="takeaway"><b>Note:</b> Individual ${who} spread across the whole range, but sample means cluster tightly around μ and pile into a bell shape, even though the population is ${shape}. Bigger samples make the pile narrower.</div>`;
+    }
+    return '';
   }
 
   // ---------- Chart helpers ----------
@@ -281,6 +305,7 @@ svg .iv.newest{opacity:1; stroke-width:6}
   function niceStep(range,count){const raw=range/count,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p;return (f<1.5?1:f<3?2:f<7?5:10)*p}
   function xAxis(c,lo,hi,X,count,fmt){
     const y=c.h-c.m.b;add(c.svg,'line',{x1:c.m.l,x2:c.w-c.m.r,y1:y,y2:y,class:'axis'});
+    count=Math.max(3,Math.min(count,Math.floor((c.w-c.m.l-c.m.r)/(S.pop==='inc'?70:45))));
     const st=niceStep(hi-lo,count),dec=st<1?(st<0.1?2:1):0;
     for(let v=Math.ceil(lo/st)*st;v<=hi+1e-9;v+=st){add(c.svg,'text',{x:X(v),y:y+20,'text-anchor':'middle'},fmt?fmt(v):v.toFixed(dec))}
   }
@@ -293,7 +318,7 @@ svg .iv.newest{opacity:1; stroke-width:6}
       if(v>0)add(c.svg,'line',{x1:c.m.l,x2:c.w-c.m.r,y1:y,y2:y,class:'grid'});
       add(c.svg,'text',{x:c.m.l-8,y:y+5,'text-anchor':'end'},f(v))}
     add(c.svg,'line',{x1:c.m.l,x2:c.m.l,y1:c.m.t,y2:c.h-c.m.b,class:'axis'});
-    add(c.svg,'text',{x:0,y:0,'text-anchor':'middle',transform:`translate(16,${(c.m.t+c.h-c.m.b)/2}) rotate(-90)`},title);
+    add(c.svg,'text',{x:0,y:0,'text-anchor':'middle',transform:`translate(16,${(c.m.t+c.h-c.m.b)/2}) rotate(-90)`},(c.h-c.m.t-c.m.b)<title.length*7.5?title.split(' ')[0]:title);
     return Y;
   }
   function empty(id,msg){document.getElementById(id).innerHTML=`<div class="empty">${msg}</div>`}
@@ -313,14 +338,10 @@ svg .iv.newest{opacity:1; stroke-width:6}
     xAxis(c,Math.max(0,p.lo),p.hi,X,xTicks(),p.tick);
     add(c.svg,'line',{x1:X(p.mu),x2:X(p.mu),y1:c.m.t-4,y2:c.h-c.m.b,class:'mu'});
     add(c.svg,'text',{x:X(p.mu)+6,y:c.m.t-12,class:'lbl-ink'},`μ = ${p.fmt(p.mu)}`);
-    if(S.step===1){
-      const sk=p.skew, word=sk>0.5?'skewed right':sk<-0.5?'skewed left':'roughly symmetric';
-      add(c.svg,'text',{x:c.w-c.m.r,y:c.m.t-12,'text-anchor':'end',class:'lbl-ink',style:'font-size:18px'},`Skewness = ${sk.toFixed(2)} (${word})`);
-    }
-    document.getElementById('t-pop').innerHTML=p.title;
+    document.getElementById('t-pop').innerHTML=`<span>${p.title}</span>`+(S.step===1?`<span class="skew">Skewness = ${p.skew.toFixed(2)} (${p.skew>0.5?'skewed right':p.skew<-0.5?'skewed left':'roughly symmetric'})</span>`:'');
   }
   function chartSample(){
-    document.getElementById('t-sample').innerHTML=`Your latest sample: <b>n = ${S.n}</b>`;
+    document.getElementById('t-sample').innerHTML=`<span>Your latest sample: <b>n = ${S.n}</b></span>`;
     if(!S.last){empty('plot-sample','Press <b>Draw one sample</b> or the space bar.');return}
     const c=canvas('plot-sample'),p=P(),X=fullX(c),nb=Math.round((p.hi-p.lo)/p.bw),b=new Array(nb).fill(0);
     S.last.xs.forEach(v=>{b[Math.min(nb-1,Math.floor((v-p.lo)/p.bw))]+=1/S.n});
@@ -338,7 +359,7 @@ svg .iv.newest{opacity:1; stroke-width:6}
   }
   function chartMeans(){
     const k=S.means.length;
-    document.getElementById('t-means').innerHTML=`Sample means: <b>${k.toLocaleString()} samples</b> of n = ${S.n} so far`;
+    document.getElementById('t-means').innerHTML=`<span>Sample means: <b>${k.toLocaleString()} samples</b> of n = ${S.n} so far</span>`;
     if(!k){empty('plot-means','Each sample you draw adds its mean here.');return}
     const c=canvas('plot-means'),p=P(),[lo,hi]=domain();
     // whole-number data put means on a lattice of 1/n; align bins to it to avoid striping
@@ -365,7 +386,7 @@ svg .iv.newest{opacity:1; stroke-width:6}
   }
   function chartIv(){
     const k=S.ivs.length,show=Math.min(k,40);
-    document.getElementById('t-iv').innerHTML=`Confidence intervals: <b>newest at the top</b>, showing ${show} of ${k.toLocaleString()}`;
+    document.getElementById('t-iv').innerHTML=`<span>Confidence intervals: <b>newest at the top</b>, showing ${show} of ${k.toLocaleString()}</span>`;
     if(!k){empty('plot-iv','Draw a sample to build your interval.');return}
     const c=canvas('plot-iv'),p=P();
     const lo=p.mu-6*SE(),hi=p.mu+6*SE();
@@ -392,18 +413,21 @@ svg .iv.newest{opacity:1; stroke-width:6}
     document.getElementById('p-means').classList.toggle('hidden',!(S.step===3||S.step===4));
     document.getElementById('p-iv').classList.toggle('hidden',S.step!==5);
     document.getElementById('draw-group').classList.toggle('hidden',S.step<2);
+    document.getElementById('n-group').classList.toggle('hidden',S.step<2);
+    document.getElementById('k-group').classList.toggle('hidden',S.step<3);
+    document.querySelectorAll('#seg-k button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.k===S.k));
     document.getElementById('means-opts').classList.toggle('hidden',!(S.step===3||S.step===4));
     document.getElementById('iv-opts').classList.toggle('hidden',S.step!==5);
     document.querySelectorAll('nav.steps button').forEach(b=>b.removeAttribute('aria-current'));
     const cur=document.querySelector(`nav.steps button[data-step="${S.step}"]`);if(cur)cur.setAttribute('aria-current','step');
-    document.getElementById('btn-one').firstChild.textContent=S.step===5?'Draw one interval ':'Draw one sample ';
+    document.getElementById('btn-one').firstChild.textContent=S.step===5?(howMany()===1?'Draw one interval ':`Draw ${howMany().toLocaleString()} intervals `):(howMany()===1?'Draw one sample ':`Draw ${howMany().toLocaleString()} samples `);
     document.querySelectorAll('#seg-n button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.n===S.n));
     document.querySelectorAll('#seg-pop button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.pop===S.pop));
     document.querySelectorAll('#seg-method button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.method===S.method));
     document.querySelectorAll('#seg-curve button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.curve==='1')===S.curve));
     document.querySelectorAll('#seg-zoom button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.zoom==='1')===S.zoom));
     document.querySelector('#seg-method [data-method="t"]').textContent=`t (${TCRIT[S.n]})`;
-    story();rail();
+    story();rail();document.getElementById('takeaway').innerHTML=takeaway();
     requestAnimationFrame(()=>{
       chartPop();
       if(S.step>=2)chartSample();
@@ -413,7 +437,10 @@ svg .iv.newest{opacity:1; stroke-width:6}
   }
   const LAST=Math.max(3,Math.min(5,parseInt(new URLSearchParams(location.search).get('steps'))||3));
   document.querySelectorAll('nav.steps button').forEach(b=>{if(+b.dataset.step>LAST)b.remove()});
-  const go=s=>{S.step=Math.max(1,Math.min(LAST,s));S.fresh=null;render()};
+  const howMany=()=>S.step>=3?S.k:1;
+  const go=s=>{const t=Math.max(1,Math.min(LAST,s));
+    if(t===3&&S.step!==3){S.means=[];S.ivs=[];S.last=null;S.k=1}
+    S.step=t;S.fresh=null;render()};
 
   // ---------- Events ----------
   document.querySelectorAll('nav.steps button').forEach(b=>b.onclick=()=>go(+b.dataset.step));
@@ -422,17 +449,15 @@ svg .iv.newest{opacity:1; stroke-width:6}
   document.querySelectorAll('#seg-method button').forEach(b=>b.onclick=()=>{S.method=b.dataset.method;S.ivs=[];render()});
   document.querySelectorAll('#seg-curve button').forEach(b=>b.onclick=()=>{S.curve=b.dataset.curve==='1';render()});
   document.querySelectorAll('#seg-zoom button').forEach(b=>b.onclick=()=>{S.zoom=b.dataset.zoom==='1';render()});
-  document.getElementById('btn-one').onclick=()=>draw(1);
-  document.getElementById('btn-100').onclick=()=>draw(100);
-  document.getElementById('btn-1000').onclick=()=>draw(1000);
+  document.getElementById('btn-one').onclick=()=>draw(howMany());
+  document.querySelectorAll('#seg-k button').forEach(b=>b.onclick=()=>{S.k=+b.dataset.k;render()});
   document.getElementById('btn-reset').onclick=reset;
   document.addEventListener('keydown',e=>{
     if(e.metaKey||e.ctrlKey||e.altKey)return;
     if(e.key==='ArrowRight'){go(S.step+1);e.preventDefault()}
     else if(e.key==='ArrowLeft'){go(S.step-1);e.preventDefault()}
     else if(['1','2','3','4','5'].includes(e.key))go(+e.key);
-    else if(e.key===' '&&S.step>=2){draw(1);e.preventDefault()}
-    else if((e.key==='m'||e.key==='M')&&S.step>=2)draw(100);
+    else if(e.key===' '&&S.step>=2){draw(howMany());e.preventDefault()}
     else if(e.key==='r'||e.key==='R')reset();
   });
   let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,120)});
